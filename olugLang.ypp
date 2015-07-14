@@ -1,0 +1,133 @@
+%{
+#include "tree.h"
+#include<stdio.h>
+#include<iostream>
+#include<cstring>
+#include<map>
+#include<vector>
+#include<string>
+#include<stack>
+extern int yylex(void);
+extern int lineNum;
+extern SymbolTable<string, Value*> NamedValues;
+vector<ExprAST*> lines;
+using namespace std;
+void yyerror(char const *s) 
+{ 
+  cerr << "\033[31m ERROR: \033[37m" << s << " in line: " << lineNum << endl;
+}
+%}
+
+%code requires
+{
+#include "tree.h"
+}
+
+%require "3.0"
+%error-verbose
+
+%union
+{
+  int intVal;
+  char charVal;
+  double doubleVal;
+  const char* strVal;
+  VarInitExprAST* varInit;
+  FunctionAST* fdef;
+  PrototypeAST* proto;
+  CallExprAST* functionCall;
+  IfExprAST* _if;
+  BinaryExprAST* bo;
+  DoubleExprAST* dval;
+  IntExprAST* ival;
+  ExprAST* expr;
+  CharExprAST* charAST;
+  std::vector<ExprAST*>* blk;
+  std::vector<FunctionAST*>* funcBlk;
+  std::vector<VarInitExprAST*>* varBlk;
+};
+
+%token NUMBER FLOAT IS ISNOT
+%token ID END CHARACTER STRING
+%token _BEGIN EXTERN LABEL GOTO VAR CALL IF  
+%token INT DOUBLE CHAR
+%token RARROW LARROW CAROT
+%token EQUAL COMPEQUAL GT LT GTE LTE NEQUAL PLUS MINUS MUL DIV MOD EMARK QMARK AND OR LSBRACE RSBRACE LPAREN RPAREN LBRACE RBRACE AT DOT COMMA COLON SEMICOLON
+
+%left EQUAL;
+%left LT GT LTE GTE;
+%left PLUS MINUS;
+%left MUL DIV;
+%nonassoc LPAREN
+
+%type <intVal> NUMBER
+%type <doubleVal> FLOAT
+%type <charVal> CHARACTER
+%type <strVal> ID END IS ISNOT STRING _BEGIN EXTERN LABEL GOTO VAR CALL IF INT DOUBLE CHAR RARROW LARROW CAROT
+%type <strVal> EQUAL COMPEQUAL GT LT GTE LTE NEQUAL PLUS MINUS MUL DIV MOD EMARK QMARK AND OR LSBRACE RSBRACE LPAREN RPAREN LBRACE RBRACE AT DOT COMMA COLON SEMICOLON
+
+%start program
+
+%%
+program: functions
+       | externs functions
+
+functions: function functions
+         | function
+
+function: prototype commands END
+
+prototype: _BEGIN ID LPAREN varDefs RPAREN
+         | _BEGIN ID LPAREN RPAREN
+
+externs: extern externs
+       | extern
+
+extern: EXTERN ID LPAREN RPAREN
+      | EXTERN ID LPAREN varDefs RPAREN
+
+commands: command commands
+        | command
+
+command: varDef
+       | label
+       | ifExpr
+       | goto
+       | numVal
+       | binOp
+       | funcCall
+          
+varDefs: varDef varDefs
+       | varDef
+
+varDef: VAR ID COLON INT
+      | VAR ID COLON DOUBLE
+      | VAR ID COLON CHAR
+
+label: LABEL ID COLON
+
+boolOp: IS
+      | ISNOT
+
+ifExpr: IF ID boolOp ID command
+      | IF ID boolOp numVal command
+      | IF ID boolOp CHARACTER command
+
+goto: GOTO ID
+
+op: PLUS
+  | MINUS
+  | MUL
+  | DIV
+
+numVal: NUMBER
+      | FLOAT
+
+operand: ID
+       | numVal
+       | binOp
+
+binOp: operand op operand
+
+funcCall: CALL ID LPAREN RPAREN
+        | CALL ID LPAREN varDefs RPAREN
