@@ -31,22 +31,26 @@ using namespace llvm;
 
 IRBuilder<> Builder(getGlobalContext());
 Module* theModule;
-extern vector<ExprAST*> lines;
-extern FILE* yyin;
-extern SymbolTable<string,Value*> symbols;
-extern FunctionPassManager* theFPM;
+SymbolTable<string,Value*> symbols;
 map<string,string> typeTab;
+extern vector<ExprAST*> funcLines;
+extern FILE* yyin;
+extern FunctionPassManager* theFPM;
 
 int main(int argc, char* argv[])
 {
   LLVMContext &Context = getGlobalContext();
   theModule = new Module("olangc", Context);
+  string name = "olangc";
 
   if (argc > 1)
+  {
     yyin = fopen(argv[1],"r");
+    name = argv[1];
+  }
   yyparse();
 
-  for(auto i : lines)
+  for(auto i : funcLines)
   {
     Value* cur = i->Codegen();
     if(!cur)
@@ -54,14 +58,14 @@ int main(int argc, char* argv[])
   }
 
   legacy::FunctionPassManager opt(theModule);
-  opt.add(createAggressiveDCEPass());
-  opt.add(createBasicAliasAnalysisPass());
-  opt.add(createPromoteMemoryToRegisterPass());
-  opt.add(createInstructionCombiningPass());
-  opt.add(createReassociatePass());
-  opt.add(createGVNPass());
-  opt.add(createCFGSimplificationPass());
-  opt.add(createVerifierPass());
+//  opt.add(createAggressiveDCEPass());
+//  opt.add(createBasicAliasAnalysisPass());
+//  opt.add(createPromoteMemoryToRegisterPass());
+//  opt.add(createInstructionCombiningPass());
+//  opt.add(createReassociatePass());
+//  opt.add(createGVNPass());
+//  opt.add(createCFGSimplificationPass());
+//  opt.add(createVerifierPass());
   opt.doInitialization();
   for (Module::iterator it = theModule->begin(); it != theModule->end(); ++it)
     opt.run(*it);

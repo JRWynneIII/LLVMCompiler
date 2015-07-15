@@ -34,12 +34,39 @@ extern Module* theModule;
 extern SymbolTable<string,Value*> symbols;
 extern map<string,string> typeTab;
 
+static AllocaInst *CreateEntryBlockAlloca(const string &VarName, string type) 
+{
+  if (type == "double")
+    return Builder.CreateAlloca(Type::getDoubleTy(getGlobalContext()), 0, VarName.c_str());
+  else if (type == "int")
+    return Builder.CreateAlloca(Type::getInt32Ty(getGlobalContext()), 0, VarName.c_str());
+  else if (type == "char")
+    return Builder.CreateAlloca(Type::getInt8Ty(getGlobalContext()), 0, VarName.c_str());
+  return 0;
+}
+
 Value* VariableRefAST::Codegen()
 {
-
+  Value* V = symbols[Name];
+  if(!V)
+    ERROR("Unknown variable reference: " + Name);
+  return Builder.CreateLoad(V,Name);
 }
 
 Value* VarInitExprAST::Codegen()
 {
-
+  if(symbols.find(Name) == symbols.end())
+  {
+    AllocaInst* Alloca;
+    Function* F = Builder.GetInsertBlock()->getParent();
+    Value* Initial;
+    typeTab[Name] = Type;
+    Alloca = CreateEntryBlockAlloca(Name,Type);
+    if(!Alloca)
+      ERROR("Invalid type for: " + Name);
+    symbols[Name] = Alloca;
+    return Alloca;
+  }
+  else
+    ERROR("Variable already exists: " + Name);
 }

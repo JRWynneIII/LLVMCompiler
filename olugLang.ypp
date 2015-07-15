@@ -9,7 +9,7 @@
 #include<stack>
 extern int yylex(void);
 extern int lineNum;
-extern SymbolTable<string, Value*> NamedValues;
+extern SymbolTable<string, Value*> symbols;
 vector<ExprAST*> lines;
 vector<ExprAST*> funcLines;
 vector<VarInitExprAST*> args;
@@ -122,9 +122,9 @@ command: varDef { lines.push_back($1); }
 varDefs: varDefs varDef
        | varDef
 
-varDef: VAR ID COLON INT { $$ = new VarInitExprAST($2,$4); }
-      | VAR ID COLON DOUBLE { $$ = new VarInitExprAST($2,$4); }
-      | VAR ID COLON CHAR { $$ = new VarInitExprAST($2,$4); }
+varDef: VAR ID COLON INT { $$ = new VarInitExprAST($2,"int"); }
+      | VAR ID COLON DOUBLE { $$ = new VarInitExprAST($2,"double"); }
+      | VAR ID COLON CHAR { $$ = new VarInitExprAST($2,"char"); }
 
 label: LABEL ID COLON { $$ = new LabelExprAST($2); }
 

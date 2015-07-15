@@ -36,17 +36,15 @@ extern map<string,string> typeTab;
 
 Value* DoubleExprAST::Codegen()
 {
-
+  return ConstantFP::get(Type::getDoubleTy(getGlobalContext()),Val);
 }
 
 Value* IntExprAST::Codegen()
 {
-
+  return ConstantInt::get(Type::getInt32Ty(getGlobalContext()),Val);
 }
 
 Value* CharExprAST::Codegen()
 {
-
+  return ConstantInt::get(Type::getInt8Ty(getGlobalContext()),Val);
 }
-
-
