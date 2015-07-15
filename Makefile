@@ -1,4 +1,4 @@
-SRC= olugLang.tab.cpp lex.yy.c main.cpp handlers.cpp
+SRC= olugLang.tab.cpp lex.yy.c main.cpp handlers.cpp branching.cpp function.cpp ops.cpp rvals.cpp vars.cpp
 all: olangc
 
 olangc: ${SRC} 

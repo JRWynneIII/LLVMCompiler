@@ -30,27 +30,46 @@ public:
   virtual Value *Codegen() = 0;
 };
 
-class identExprAST : public ExprAST
+class LetExprAST : public ExprAST
 {
-public:
   string Name;
-  identExprAST(const string& name) : Name(name) {}
+  ExprAST* RHS;
+public:  
+  LetExprAST(string name, ExprAST* rhs) : Name(name), RHS(rhs) {}
   virtual string getType() { return typeTab[Name]; }
   virtual string getName() { return Name; }
-  virtual Value* Codegen() = 0;
+  virtual Value* Codegen();
 };
 
 class IfExprAST : public ExprAST
 {
   ExprAST *Cond;
-  vector<ExprAST*> Else, Then;
-  bool hasElse;
+  ExprAST* Then;
 public:
-  IfExprAST(ExprAST *cond, vector<ExprAST*> then, vector<ExprAST*> _else) : Cond(cond), Then(then), Else(_else) { hasElse = true; }
-  IfExprAST(ExprAST *cond, vector<ExprAST*> then) : Cond(cond), Then(then) { hasElse = false; }
+  IfExprAST(ExprAST *cond, ExprAST* then) : Cond(cond), Then(then) {}
   virtual string getType() { return Cond->getType(); }
   virtual string getName() { return Cond->getName(); }
   virtual Value *Codegen();
+};
+
+class GotoExprAST : public ExprAST
+{
+  string Label;
+public:
+  GotoExprAST(string label) : Label(label) {}
+  virtual string getType() { return "goto"; }
+  virtual string getName() { return Label; }
+  virtual Value* Codegen();
+};
+
+class LabelExprAST : public ExprAST
+{
+  string Label;
+public:
+  LabelExprAST(string label) : Label(label) {}
+  virtual string getType() { return "label"; }
+  virtual string getName() { return Label; }
+  virtual Value* Codegen();
 };
 
 class IntExprAST : public ExprAST 
@@ -97,9 +116,8 @@ public:
 class VariableRefAST : public ExprAST 
 {
   string Name;
-  string Type;
 public:
-  VariableRefAST(const string &name, const string &type) : Name(name), Type(type) {}
+  VariableRefAST(const string &name) : Name(name) {}
   virtual string getName() { return Name; }
   virtual string getType() { return typeTab[Name]; }
   virtual Value *Codegen();
@@ -109,10 +127,8 @@ class VarInitExprAST : public ExprAST
 {
   string Name;
   string Type;
-  ExprAST* Initd;
-  ExprAST* arrayIdx;
 public:
-  VarInitExprAST(const string &name, const string &type, ExprAST* initd, ExprAST* ArrayIdx = new IntExprAST(1)) : Name(name), Type(type), Initd(initd), arrayIdx(ArrayIdx) {}
+  VarInitExprAST(const string &name, const string &type) : Name(name), Type(type) {}
   virtual string getName() { return Name; }
   virtual string getType() { return Type; }
   virtual Value* Codegen();
@@ -160,7 +176,7 @@ class PrototypeAST : public ExprAST
   vector<VarInitExprAST*> Args;
   string Ty;
 public:
-  PrototypeAST(const string &name, const vector<VarInitExprAST*> &args, const string& type, bool isKernel = false) : Name(name), Args(args), Ty(type) {}
+  PrototypeAST(const string &name, const vector<VarInitExprAST*> &args) : Name(name), Args(args) {}
   virtual string getType() { return Ty; }
   virtual string getName() { return Name; }
   Function *Codegen();

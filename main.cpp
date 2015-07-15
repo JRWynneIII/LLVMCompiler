@@ -35,6 +35,7 @@ extern vector<ExprAST*> lines;
 extern FILE* yyin;
 extern SymbolTable<string,Value*> symbols;
 extern FunctionPassManager* theFPM;
+map<string,string> typeTab;
 
 int main(int argc, char* argv[])
 {

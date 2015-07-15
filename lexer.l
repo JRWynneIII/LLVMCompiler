@@ -43,6 +43,9 @@ NUMBER [0-9]+
 "CALL" { return CALL; }
 "Call" { return CALL; }
 "call" { return CALL; }
+"let" { return LET; }
+"Let" { return LET; }
+"LET" { return LET; }
 "if" { return IF; }
 "If" { return IF; }
 "IF" { return IF; }

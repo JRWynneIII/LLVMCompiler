@@ -11,6 +11,9 @@ extern int yylex(void);
 extern int lineNum;
 extern SymbolTable<string, Value*> NamedValues;
 vector<ExprAST*> lines;
+vector<ExprAST*> funcLines;
+vector<VarInitExprAST*> args;
+vector<ExprAST*> callArgs;
 using namespace std;
 void yyerror(char const *s) 
 { 
@@ -42,12 +45,15 @@ void yyerror(char const *s)
   IntExprAST* ival;
   ExprAST* expr;
   CharExprAST* charAST;
+  LabelExprAST* lab;
+  GotoExprAST* _goto;
+  LetExprAST* let;
   std::vector<ExprAST*>* blk;
   std::vector<FunctionAST*>* funcBlk;
   std::vector<VarInitExprAST*>* varBlk;
 };
 
-%token NUMBER FLOAT IS ISNOT
+%token NUMBER FLOAT IS ISNOT LET
 %token ID END CHARACTER STRING
 %token _BEGIN EXTERN LABEL GOTO VAR CALL IF  
 %token INT DOUBLE CHAR
@@ -63,8 +69,19 @@ void yyerror(char const *s)
 %type <intVal> NUMBER
 %type <doubleVal> FLOAT
 %type <charVal> CHARACTER
-%type <strVal> ID END IS ISNOT STRING _BEGIN EXTERN LABEL GOTO VAR CALL IF INT DOUBLE CHAR RARROW LARROW CAROT
+%type <strVal> ID END IS ISNOT STRING _BEGIN EXTERN LABEL GOTO VAR CALL IF INT DOUBLE CHAR RARROW LARROW CAROT LET
 %type <strVal> EQUAL COMPEQUAL GT LT GTE LTE NEQUAL PLUS MINUS MUL DIV MOD EMARK QMARK AND OR LSBRACE RSBRACE LPAREN RPAREN LBRACE RBRACE AT DOT COMMA COLON SEMICOLON
+
+%type <proto> prototype
+%type <varInit> varDef
+%type <charVal> op boolOp
+%type <_goto> goto
+%type <lab> label
+%type <expr> numVal operand command binOp
+%type <_if> ifExpr
+%type <functionCall> funcCall
+%type <let> assignment
+
 
 %start program
 
@@ -72,62 +89,72 @@ void yyerror(char const *s)
 program: functions
        | externs functions
 
-functions: function functions
+functions: functions function
          | function
 
-function: prototype commands END
+function: prototype commands END { funcLines.push_back(new FunctionAST($1,lines)); lines.clear(); }
 
-prototype: _BEGIN ID LPAREN varDefs RPAREN
-         | _BEGIN ID LPAREN RPAREN
+prototype: _BEGIN ID LPAREN paramDefs RPAREN { $$ = new PrototypeAST($2,args); args.clear(); }
+         | _BEGIN ID LPAREN RPAREN { $$ = new PrototypeAST($2,args); args.clear(); }
 
-externs: extern externs
+paramDefs: paramDefs COMMA paramDef
+         | paramDef
+
+paramDef: varDef  { args.push_back($1); }
+
+externs: externs extern
        | extern
 
 extern: EXTERN ID LPAREN RPAREN
       | EXTERN ID LPAREN varDefs RPAREN
 
-commands: command commands
+commands: commands command
         | command
 
-command: varDef
-       | label
-       | ifExpr
-       | goto
-       | numVal
-       | binOp
-       | funcCall
+command: varDef { lines.push_back($1); }
+       | label { lines.push_back($1); }
+       | ifExpr { lines.push_back($1); }
+       | goto { lines.push_back($1); }
+       | numVal { lines.push_back($1); }
+       | binOp { lines.push_back($1); }
+       | funcCall { lines.push_back($1); }
           
-varDefs: varDef varDefs
+varDefs: varDefs varDef
        | varDef
 
-varDef: VAR ID COLON INT
-      | VAR ID COLON DOUBLE
-      | VAR ID COLON CHAR
+varDef: VAR ID COLON INT { $$ = new VarInitExprAST($2,$4); }
+      | VAR ID COLON DOUBLE { $$ = new VarInitExprAST($2,$4); }
+      | VAR ID COLON CHAR { $$ = new VarInitExprAST($2,$4); }
 
-label: LABEL ID COLON
+label: LABEL ID COLON { $$ = new LabelExprAST($2); }
 
-boolOp: IS
-      | ISNOT
+boolOp: IS { $$ = 'e'; }
+      | ISNOT { $$ = 'n'; }
 
-ifExpr: IF ID boolOp ID command
-      | IF ID boolOp numVal command
-      | IF ID boolOp CHARACTER command
+ifExpr: IF ID boolOp ID command { BinaryExprAST* tmp = new BinaryExprAST($3,$2, new VariableRefAST($4)); $$ = new IfExprAST(tmp,$5); }
+      | IF ID boolOp numVal command { BinaryExprAST* tmp = new BinaryExprAST($3,$2,$4); $$ = new IfExprAST(tmp,$5); }
+      | IF ID boolOp CHARACTER command { BinaryExprAST* tmp = new BinaryExprAST($3,$2,new CharExprAST($4)); $$ = new IfExprAST(tmp,$5); }
 
-goto: GOTO ID
+goto: GOTO ID { $$ = new GotoExprAST($2); }
 
-op: PLUS
-  | MINUS
-  | MUL
-  | DIV
+op: PLUS { $$ = '+'; }
+  | MINUS { $$ = '-'; }
+  | MUL { $$ = '*'; }
+  | DIV { $$ = '/'; }
 
-numVal: NUMBER
-      | FLOAT
+numVal: NUMBER { $$ = new IntExprAST($1); }
+      | FLOAT { $$ = new DoubleExprAST($1); }
 
-operand: ID
-       | numVal
-       | binOp
+operand: ID { $$ = new VariableRefAST($1); }
+       | numVal { $$ = $1; }
+       | binOp { $$ = $1; }
+       | CHARACTER { $$ = new CharExprAST($1); }
 
-binOp: operand op operand
+assignment: LET ID EQUAL operand { $$ = new LetExprAST($1,$4); }
 
-funcCall: CALL ID LPAREN RPAREN
-        | CALL ID LPAREN varDefs RPAREN
+binOp: operand op operand { $$ = new BinaryExprAST($2,$1,$3); }
+     | assignment { $$ = $1; }
+
+funcCall: CALL ID LPAREN RPAREN { $$ = new CallExprAST($2,callArgs); callArgs.clear(); }
+        | CALL ID LPAREN varDefs RPAREN { $$ = new CallExprAST($2,callArgs); callArgs.clear(); }
+
