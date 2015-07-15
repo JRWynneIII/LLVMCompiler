@@ -36,10 +36,56 @@ extern map<string,string> typeTab;
 
 Value* BinaryExprAST::Codegen()
 {
-
+  Value* L = LHS->Codegen();
+  Value* R = RHS->Codegen();
+  bool isInt = true;
+  if(!L || !R)
+    return 0;
+  string lty = LHS->getType();
+  string rty = RHS->getType();
+  if(lty != rty)
+    ERROR("Types do not match: " + RHS->getName() + " " + LHS->getName());
+  if(lty == "double")
+    isInt = false;
+  switch(Op)
+  {
+    case '+':
+      if(!isInt)
+        return Builder.CreateFAdd(L, R, "addVal");
+      else
+        return Builder.CreateAdd(L,R,"addVal");
+    case '-':
+      if(!isInt)
+        return Builder.CreateFSub(L, R, "subVal");
+      else
+        return Builder.CreateSub(L,R,"subVal");
+    case '*':
+      if(!isInt)
+        return Builder.CreateFMul(L, R, "mulVal");
+      else
+        return Builder.CreateMul(L,R,"mulVal");
+    case '/':
+      if(!isInt)
+        return Builder.CreateFDiv(L, R, "divVal");
+      else
+        return Builder.CreateUDiv(L,R,"divVal");
+    default:
+      break;
+  }
+  return 0;
 }
 
 Value* LetExprAST::Codegen()
 {
-
+  VariableRefAST* LHS = new VariableRefAST(Name);
+  Value* lhs = LHS->Codegen();
+  if(!lhs)
+   ERROR("lvalue must be a variable!");
+  Value* rhs = RHS->Codegen();
+  if(!rhs)
+    ERROR("Invalid rvalue for assignment op!");  
+  Value* Alloca = symbols[Name];
+  if(!Alloca)
+    ERROR("Variable not declared: " + Name);
+  return Builder.CreateStore(rhs,Alloca);
 }

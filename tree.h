@@ -35,7 +35,7 @@ class LetExprAST : public ExprAST
   string Name;
   ExprAST* RHS;
 public:  
-  LetExprAST(string name, ExprAST* rhs) : Name(name), RHS(rhs) {}
+  LetExprAST(const string& name, ExprAST* rhs) : Name(name), RHS(rhs) {}
   virtual string getType() { return typeTab[Name]; }
   virtual string getName() { return Name; }
   virtual Value* Codegen();

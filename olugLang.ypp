@@ -77,7 +77,8 @@ void yyerror(char const *s)
 %type <charVal> op boolOp
 %type <_goto> goto
 %type <lab> label
-%type <expr> numVal operand command binOp
+%type <expr> numVal operand command 
+%type <bo> binOp
 %type <_if> ifExpr
 %type <functionCall> funcCall
 %type <let> assignment
@@ -105,8 +106,8 @@ paramDef: varDef  { args.push_back($1); }
 externs: externs extern
        | extern
 
-extern: EXTERN ID LPAREN RPAREN
-      | EXTERN ID LPAREN varDefs RPAREN
+extern: EXTERN ID LPAREN RPAREN { createExtern(new PrototypeAST($2,args)); args.clear(); }
+      | EXTERN ID LPAREN paramDefs RPAREN
 
 commands: commands command
         | command
@@ -117,6 +118,7 @@ command: varDef { lines.push_back($1); }
        | goto { lines.push_back($1); }
        | numVal { lines.push_back($1); }
        | binOp { lines.push_back($1); }
+       | assignment { lines.push_back($1); }
        | funcCall { lines.push_back($1); }
           
 varDefs: varDefs varDef
@@ -150,10 +152,9 @@ operand: ID { $$ = new VariableRefAST($1); }
        | binOp { $$ = $1; }
        | CHARACTER { $$ = new CharExprAST($1); }
 
-assignment: LET ID EQUAL operand { $$ = new LetExprAST($1,$4); }
+assignment: LET ID EQUAL operand { $$ = new LetExprAST(string($1),$4); }
 
 binOp: operand op operand { $$ = new BinaryExprAST($2,$1,$3); }
-     | assignment { $$ = $1; }
 
 funcCall: CALL ID LPAREN RPAREN { $$ = new CallExprAST($2,callArgs); callArgs.clear(); }
         | CALL ID LPAREN varDefs RPAREN { $$ = new CallExprAST($2,callArgs); callArgs.clear(); }

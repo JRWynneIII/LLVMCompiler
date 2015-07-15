@@ -28,6 +28,8 @@ NUMBER [0-9]+
 "End" { return END; }
 "END" { return END; }
 "extern" { return EXTERN; }
+"Extern" { return EXTERN; }
+"EXTERN" { return EXTERN; }
 "int" { return INT; }
 "double" { return DOUBLE; }
 "char" { return CHAR; }
