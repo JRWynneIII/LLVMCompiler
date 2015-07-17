@@ -1,9 +1,7 @@
-EXTERN putchar()
+EXTERN putchar(var c: char)
 BEGIN main()
-  var a: int
-  var b: int
-  var c: int
-  let a = 4
-  let b = 5
+  var c: char
+  let c = 'h'
+  call putchar(c)
   1
 END
