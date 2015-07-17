@@ -33,15 +33,20 @@ extern IRBuilder<> Builder;
 extern Module* theModule;
 extern SymbolTable<string,Value*> symbols;
 extern map<string,string> typeTab;
+map<string,BasicBlock*> blocks;
 
 Value* GotoExprAST::Codegen()
 {
-
+  BasicBlock* block = blocks[Label];
+  return Builder.CreateBr(block);
 }
 
 Value* LabelExprAST::Codegen()
 {
-
+  BasicBlock* newBlock = BasicBlock::Create(getGlobalContext(),Label,Builder.GetInsertBlock()->getParent());
+  blocks[Label] = newBlock;
+  Builder.SetInsertPoint(newBlock);
+  return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
 }
 
 Value* IfExprAST::Codegen()

@@ -1,11 +1,13 @@
 EXTERN putchar(var c: char)
 BEGIN main()
   var a: int
-  let a = 4
+  let a = 0
   var c: char
   let c = 'h'
-  if a is 4
-    call putchar(c)
-  call putchar(c) 
+  label loopTop:
+    call putchar(c) 
+    let a = a + 1
+    if a isnot 10
+      goto loopTop
   1
 END
