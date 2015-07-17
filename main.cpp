@@ -75,7 +75,8 @@ int main(int argc, char* argv[])
   string Errors, ErrorCatch;
   string outFile(argv[1]);
   outFile += ".ll";
-  int fd = open(outFile.c_str(), O_RDWR | O_CREAT | O_TRUNC);
+  FILE* file = fopen(outFile.c_str(), "rw");
+  int fd = fileno(file);
   if (fd <= 0)
   {
     cerr << "FILE NOT OPENED\nfd = " << fd << endl;
