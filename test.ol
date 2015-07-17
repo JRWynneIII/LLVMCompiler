@@ -4,7 +4,7 @@ BEGIN main()
   let a = 4
   var c: char
   let c = 'h'
-  if a is 2
+  if a is 4
     call putchar(c)
   call putchar(c) 
   1

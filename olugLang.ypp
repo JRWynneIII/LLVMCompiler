@@ -109,17 +109,17 @@ externs: externs extern
 extern: EXTERN ID LPAREN RPAREN { createExtern(new PrototypeAST($2,args)); args.clear(); }
       | EXTERN ID LPAREN paramDefs RPAREN { createExtern(new PrototypeAST($2,args)); args.clear(); } 
 
-commands: commands command
-        | command
+commands: commands command { lines.push_back($2); }
+        | command { lines.push_back($1); }
 
-command: varDef { lines.push_back($1); }
-       | funcCall { lines.push_back($1); }
-       | label { lines.push_back($1); }
-       | ifExpr { lines.push_back($1); }
-       | goto { lines.push_back($1); }
-       | numVal { lines.push_back($1); }
-       | binOp { lines.push_back($1); }
-       | assignment { lines.push_back($1); }
+command: varDef { $$ = $1; }
+       | funcCall { $$ = $1; }
+       | label { $$ = $1; }
+       | ifExpr { $$ = $1; }
+       | goto { $$ = $1; }
+       | numVal { $$ = $1; }
+       | binOp { $$ = $1; }
+       | assignment { $$ = $1; }
           
 varDef: VAR ID COLON INT { $$ = new VarInitExprAST($2,"int"); }
       | VAR ID COLON DOUBLE { $$ = new VarInitExprAST($2,"double"); }
