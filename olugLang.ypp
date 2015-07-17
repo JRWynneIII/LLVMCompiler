@@ -152,7 +152,7 @@ operand: ID { $$ = new VariableRefAST($1); }
        | binOp { $$ = $1; }
        | CHARACTER { $$ = new CharExprAST($1); }
 
-assignment: LET ID EQUAL operand { $$ = new LetExprAST(string($1),$4); }
+assignment: LET ID EQUAL operand { $$ = new LetExprAST($2,$4); }
 
 binOp: operand op operand { $$ = new BinaryExprAST($2,$1,$3); }
 

@@ -104,6 +104,6 @@ NUMBER [0-9]+
   return STRING; 
 }
 
-\n {lineNum++; /*return END;*/ }
+\n {lineNum++; }
 . { fprintf(stderr, "Unknown token '%s'\n", yytext); }
 
