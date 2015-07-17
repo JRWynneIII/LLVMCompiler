@@ -75,8 +75,8 @@ int main(int argc, char* argv[])
   string Errors, ErrorCatch;
   string outFile(argv[1]);
   outFile += ".ll";
-  FILE* file = fopen(outFile.c_str(), "rw");
-  int fd = fileno(file);
+  system(string("touch " + outFile).c_str());
+  int fd = open(outFile.c_str(), O_RDWR | O_TRUNC | O_CREAT);
   if (fd <= 0)
   {
     cerr << "FILE NOT OPENED\nfd = " << fd << endl;
@@ -84,4 +84,5 @@ int main(int argc, char* argv[])
   }
   raw_fd_ostream bcFile(fd, false);
   WriteBitcodeToFile(theModule,bcFile);
+  fflush(stdout);
 }
