@@ -130,9 +130,9 @@ label: LABEL ID COLON { $$ = new LabelExprAST($2); }
 boolOp: IS { $$ = 'e'; }
       | ISNOT { $$ = 'n'; }
 
-ifExpr: IF ID boolOp ID command { BinaryExprAST* tmp = new BinaryExprAST($3,$2, new VariableRefAST($4)); $$ = new IfExprAST(tmp,$5); }
-      | IF ID boolOp numVal command { BinaryExprAST* tmp = new BinaryExprAST($3,$2,$4); $$ = new IfExprAST(tmp,$5); }
-      | IF ID boolOp CHARACTER command { BinaryExprAST* tmp = new BinaryExprAST($3,$2,new CharExprAST($4)); $$ = new IfExprAST(tmp,$5); }
+ifExpr: IF ID boolOp ID command { BinaryExprAST* tmp = new BinaryExprAST($3, new VariableRefAST($2), new VariableRefAST($4)); $$ = new IfExprAST(tmp,$5); }
+      | IF ID boolOp numVal command { BinaryExprAST* tmp = new BinaryExprAST($3,new VariableRefAST($2),$4); $$ = new IfExprAST(tmp,$5); }
+      | IF ID boolOp CHARACTER command { BinaryExprAST* tmp = new BinaryExprAST($3,new VariableRefAST($2),new CharExprAST($4)); $$ = new IfExprAST(tmp,$5); }
 
 goto: GOTO ID { $$ = new GotoExprAST($2); }
 

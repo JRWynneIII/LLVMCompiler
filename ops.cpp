@@ -69,6 +69,28 @@ Value* BinaryExprAST::Codegen()
         return Builder.CreateFDiv(L, R, "divVal");
       else
         return Builder.CreateUDiv(L,R,"divVal");
+    case 'e':
+      if(!isInt)
+      {
+        L = Builder.CreateFCmpUEQ(L,R,"cmptmp");
+        return Builder.CreateSIToFP(L, Type::getDoubleTy(getGlobalContext()), "booltmp");
+      }
+      else
+      {
+        L = Builder.CreateICmpEQ(L,R,"cmptmp");
+        return Builder.CreateSExt(L, Type::getInt32Ty(getGlobalContext()), "booltmp");
+      }
+    case 'n':
+      if(!isInt)
+      {
+        L = Builder.CreateFCmpUNE(L,R,"cmptmp");
+        return Builder.CreateSIToFP(L, Type::getDoubleTy(getGlobalContext()), "booltmp");
+      }
+      else
+      {
+        L = Builder.CreateICmpNE(L,R,"cmptmp");
+        return Builder.CreateSExt(L, Type::getInt32Ty(getGlobalContext()), "booltmp");
+      }
     default:
       break;
   }

@@ -46,5 +46,35 @@ Value* LabelExprAST::Codegen()
 
 Value* IfExprAST::Codegen()
 {
+  cout << "DO THE THING\n";
+  Value* CondV = Cond->Codegen();
+  if(!CondV)
+    return 0;
+  string ty = Cond->getType();
+  if(ty == "double")
+    Builder.CreateFCmpONE(CondV, ConstantFP::get(getGlobalContext(),APFloat(0.0)), "ifcond");
+  else if(ty == "int")
+    Builder.CreateICmpNE(CondV,ConstantInt::get(Type::getInt32Ty(getGlobalContext()),0),"ifcond");
+  else
+    ERROR("Invalid type in if statement");
 
+  Function* F = Builder.GetInsertBlock()->getParent();
+  BasicBlock* Entry = Builder.GetInsertBlock();
+
+  BasicBlock* thenBlock = BasicBlock::Create(getGlobalContext(), "then", F);
+  BasicBlock* mergeBlock = BasicBlock::Create(getGlobalContext(), "ifcont");
+
+  if (ty == "double")
+    CondV = Builder.CreateFPToSI(CondV, Type::getInt32Ty(getGlobalContext()));
+  Value* sCond = Builder.CreateSExtOrTrunc(CondV, Type::getInt1Ty(getGlobalContext()));
+  Builder.CreateCondBr(sCond, thenBlock, mergeBlock);
+  Builder.SetInsertPoint(thenBlock);
+
+  Value* Tlast = Then->Codegen();
+
+  Builder.CreateBr(mergeBlock);
+  thenBlock = Builder.GetInsertBlock();
+  F->getBasicBlockList().push_back(mergeBlock);
+  Builder.SetInsertPoint(mergeBlock);
+  return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
 }

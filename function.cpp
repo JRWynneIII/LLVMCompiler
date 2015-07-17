@@ -60,6 +60,7 @@ Function* FunctionAST::Codegen()
     return F;
   }
   //Erase the function if theres an error
+  //theModule->dump();
   F->eraseFromParent();
   ERROR("Invalid Function Definition");
   return 0;
