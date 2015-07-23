@@ -10,8 +10,9 @@
 extern int yylex(void);
 extern int lineNum;
 extern SymbolTable<string, Value*> symbols;
-vector<ExprAST*> topLevel;
-vector<ExprAST*>* lines = &topLevel;
+vector<ExprAST*>* lines = new vector<ExprAST*>();
+stack<vector<ExprAST*>*> parseStack;
+
 vector<ExprAST*> funcLines;
 vector<VarInitExprAST*> args;
 vector<ExprAST*> callArgs;
@@ -126,9 +127,9 @@ varDef: VAR ID COLON INT { $$ = new VarInitExprAST($2,"int"); }
 boolOp: IS { $$ = 'e'; }
       | ISNOT { $$ = 'n'; }
 
-forStart: FOR { lines = new vector<ExprAST*>(); }
+forStart: FOR { parseStack.push(lines); lines = new vector<ExprAST*>(); }
 
-forLoop: forStart operand TO operand commands forEnd { vector<ExprAST*> tmp = *lines; $$ = new ForExprAST($2,$4,tmp); lines = &topLevel; }
+forLoop: forStart operand TO operand commands forEnd { vector<ExprAST*> tmp = *lines; $$ = new ForExprAST($2,$4,tmp); lines = parseStack.top(); parseStack.pop(); }
 
 forEnd: NEXT { }
 
