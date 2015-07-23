@@ -56,7 +56,7 @@ Function* FunctionAST::Codegen()
   {
     Builder.CreateRet(last);
     verifyFunction(*F);
-    symbols.clear();
+    symbols.clearAll();
     return F;
   }
   //Erase the function if theres an error
