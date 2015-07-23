@@ -10,7 +10,8 @@
 extern int yylex(void);
 extern int lineNum;
 extern SymbolTable<string, Value*> symbols;
-vector<ExprAST*> lines;
+vector<ExprAST*> topLevel;
+vector<ExprAST*>* lines = &topLevel;
 vector<ExprAST*> funcLines;
 vector<VarInitExprAST*> args;
 vector<ExprAST*> callArgs;
@@ -45,15 +46,14 @@ void yyerror(char const *s)
   IntExprAST* ival;
   ExprAST* expr;
   CharExprAST* charAST;
-  LabelExprAST* lab;
-  GotoExprAST* _goto;
+  ForExprAST* _for;
   LetExprAST* let;
   std::vector<ExprAST*>* blk;
   std::vector<FunctionAST*>* funcBlk;
   std::vector<VarInitExprAST*>* varBlk;
 };
 
-%token NUMBER FLOAT IS ISNOT LET
+%token NUMBER FLOAT IS ISNOT LET FOR TO NEXT
 %token ID END CHARACTER STRING
 %token _BEGIN EXTERN LABEL GOTO VAR CALL IF  
 %token INT DOUBLE CHAR
@@ -69,19 +69,18 @@ void yyerror(char const *s)
 %type <intVal> NUMBER
 %type <doubleVal> FLOAT
 %type <charVal> CHARACTER
-%type <strVal> ID END IS ISNOT STRING _BEGIN EXTERN LABEL GOTO VAR CALL IF INT DOUBLE CHAR RARROW LARROW CAROT LET
+%type <strVal> ID END IS ISNOT STRING _BEGIN EXTERN VAR CALL IF INT DOUBLE CHAR RARROW LARROW CAROT LET FOR TO NEXT
 %type <strVal> EQUAL COMPEQUAL GT LT GTE LTE NEQUAL PLUS MINUS MUL DIV MOD EMARK QMARK AND OR LSBRACE RSBRACE LPAREN RPAREN LBRACE RBRACE AT DOT COMMA COLON SEMICOLON
 
 %type <proto> prototype
 %type <varInit> varDef
 %type <charVal> op boolOp
-%type <_goto> goto
-%type <lab> label
 %type <expr> numVal operand command 
 %type <bo> binOp
 %type <_if> ifExpr
 %type <functionCall> funcCall
 %type <let> assignment
+%type <_for> forLoop
 
 
 %start program
@@ -93,7 +92,7 @@ program: functions
 functions: functions function
          | function
 
-function: prototype commands END { funcLines.push_back(new FunctionAST($1,lines)); lines.clear(); }
+function: prototype commands END { funcLines.push_back(new FunctionAST($1,*lines)); lines->clear(); }
 
 prototype: _BEGIN ID LPAREN paramDefs RPAREN { $$ = new PrototypeAST($2,args); args.clear(); }
          | _BEGIN ID LPAREN RPAREN { $$ = new PrototypeAST($2,args); args.clear(); }
@@ -109,32 +108,33 @@ externs: externs extern
 extern: EXTERN ID LPAREN RPAREN { createExtern(new PrototypeAST($2,args)); args.clear(); }
       | EXTERN ID LPAREN paramDefs RPAREN { createExtern(new PrototypeAST($2,args)); args.clear(); } 
 
-commands: commands command { lines.push_back($2); }
-        | command { lines.push_back($1); }
+commands: commands command { lines->push_back($2); }
+        | command { lines->push_back($1); }
 
 command: varDef { $$ = $1; }
        | funcCall { $$ = $1; }
-       | label { $$ = $1; }
        | ifExpr { $$ = $1; }
-       | goto { $$ = $1; }
        | numVal { $$ = $1; }
        | binOp { $$ = $1; }
+       | forLoop { $$ = $1; }
        | assignment { $$ = $1; }
           
 varDef: VAR ID COLON INT { $$ = new VarInitExprAST($2,"int"); }
       | VAR ID COLON DOUBLE { $$ = new VarInitExprAST($2,"double"); }
       | VAR ID COLON CHAR { $$ = new VarInitExprAST($2,"char"); }
 
-label: LABEL ID COLON { $$ = new LabelExprAST($2); }
-
 boolOp: IS { $$ = 'e'; }
       | ISNOT { $$ = 'n'; }
+
+forStart: FOR { lines = new vector<ExprAST*>(); }
+
+forLoop: forStart operand TO operand commands forEnd { vector<ExprAST*> tmp = *lines; $$ = new ForExprAST($2,$4,tmp); lines = &topLevel; }
+
+forEnd: NEXT { }
 
 ifExpr: IF ID boolOp ID command { BinaryExprAST* tmp = new BinaryExprAST($3, new VariableRefAST($2), new VariableRefAST($4)); $$ = new IfExprAST(tmp,$5); }
       | IF ID boolOp numVal command { BinaryExprAST* tmp = new BinaryExprAST($3,new VariableRefAST($2),$4); $$ = new IfExprAST(tmp,$5); }
       | IF ID boolOp CHARACTER command { BinaryExprAST* tmp = new BinaryExprAST($3,new VariableRefAST($2),new CharExprAST($4)); $$ = new IfExprAST(tmp,$5); }
-
-goto: GOTO ID { $$ = new GotoExprAST($2); }
 
 op: PLUS { $$ = '+'; }
   | MINUS { $$ = '-'; }

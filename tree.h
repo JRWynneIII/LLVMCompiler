@@ -52,23 +52,14 @@ public:
   virtual Value *Codegen();
 };
 
-class GotoExprAST : public ExprAST
+class ForExprAST : public ExprAST
 {
-  string Label;
+  ExprAST *Start, *End, *Step;
+  vector<ExprAST*> Body;
 public:
-  GotoExprAST(string label) : Label(label) {}
-  virtual string getType() { return "goto"; }
-  virtual string getName() { return Label; }
-  virtual Value* Codegen();
-};
-
-class LabelExprAST : public ExprAST
-{
-  string Label;
-public:
-  LabelExprAST(string label) : Label(label) {}
-  virtual string getType() { return "label"; }
-  virtual string getName() { return Label; }
+  ForExprAST(ExprAST *start, ExprAST *end, vector<ExprAST*> body) : Start(start), End(end), Body(body) {}
+  virtual string getType() { return Start->getName(); }
+  virtual string getName() { return Start->getType(); }
   virtual Value* Codegen();
 };
 

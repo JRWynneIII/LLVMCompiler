@@ -4,10 +4,8 @@ BEGIN main()
   let a = 0
   var c: char
   let c = 'h'
-  label loopTop:
+  for a to 10
     call putchar(c) 
-    let a = a + 1
-    if a isnot 10
-      goto loopTop
+  next
   1
 END
