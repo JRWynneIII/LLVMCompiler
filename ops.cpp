@@ -34,6 +34,22 @@ extern Module* theModule;
 extern SymbolTable<string,Value*> symbols;
 extern map<string,string> typeTab;
 
+void BinaryExprAST::convertTypes()
+{
+  if(lty == "int" && rty == "double")
+  {
+    L = Builder.CreateSIToFP(L, Type::getDoubleTy(getGlobalContext()));
+    return;
+  }
+  else if (lty == "double" && rty == "int")
+  {
+    R = Builder.CreateSIToFP(R, Type::getDoubleTy(getGlobalContext()));
+    return;
+  }
+  else
+    ERROR("Type Mismatch! " + LHS->getName() + ", " + RHS->getName());
+}
+
 Value* BinaryExprAST::Codegen()
 {
   Value* L = LHS->Codegen();
@@ -41,10 +57,10 @@ Value* BinaryExprAST::Codegen()
   bool isInt = true;
   if(!L || !R)
     return 0;
-  string lty = LHS->getType();
-  string rty = RHS->getType();
+  lty = LHS->getType();
+  rty = RHS->getType();
   if(lty != rty)
-    ERROR("Types do not match: " + RHS->getName() + " " + LHS->getName());
+    convertTypes();
   if(lty == "double")
     isInt = false;
   switch(Op)

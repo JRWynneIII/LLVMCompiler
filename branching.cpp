@@ -75,6 +75,8 @@ Value* ForExprAST::Codegen()
   }
 
   Value *CurVar = Builder.CreateLoad(Alloca, VarName.c_str());
+  if (typeTab[VarName] != "int")
+    Builder.CreateSIToFP(CurVar, Type::getInt32Ty(getGlobalContext())); 
   Value *NextVar = Builder.CreateAdd(CurVar, StepVal, "nextvar");
 
   if (Ty != "int")

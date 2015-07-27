@@ -158,6 +158,7 @@ operand: ID { $$ = new VariableRefAST($1); }
 assignment: LET ID EQUAL operand { $$ = new LetExprAST($2,$4); }
 
 binOp: operand op operand { $$ = new BinaryExprAST($2,$1,$3); }
+     | LPAREN binOp RPAREN { $$ = $2; }
 
 funcCall: CALL ID LPAREN RPAREN { $$ = new CallExprAST($2,callArgs); callArgs.clear(); }
         | CALL ID LPAREN callargs RPAREN { $$ = new CallExprAST($2,callArgs); callArgs.clear(); }
