@@ -126,6 +126,8 @@ varDef: VAR ID COLON INT { $$ = new VarInitExprAST($2,"int"); }
 
 boolOp: IS { $$ = 'e'; }
       | ISNOT { $$ = 'n'; }
+      | GT { $$ = '>'; }
+      | LT { $$ = '<'; }
 
 forStart: FOR { parseStack.push(lines); lines = new vector<ExprAST*>(); }
 

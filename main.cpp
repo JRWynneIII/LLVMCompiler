@@ -71,6 +71,12 @@ int main(int argc, char* argv[])
     opt.run(*it);
   opt.doFinalization();
   theModule->dump();
+
+  EngineBuilder b(unique_ptr<Module>(theModule));
+  TargetMachine *tm = b.selectTarget();
+  tm->Options.PrintMachineCode = 1;
+  ExecutionEngine *EE = b.create(tm);
+
   //Write to the file
   string Errors, ErrorCatch;
   string outFile(argv[1]);

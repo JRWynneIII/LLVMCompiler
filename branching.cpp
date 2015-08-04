@@ -62,21 +62,11 @@ Value* ForExprAST::Codegen()
     return EndCond;
 
 
-  Value *StepVal;
-  if (Step) 
-  {
-    StepVal = Step->Codegen();
-    if (StepVal == 0)
-      return 0;
-  } 
-  else
-  {
-    StepVal = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 1);
-  }
+  Value *StepVal = ConstantInt::get(Type::getInt32Ty(getGlobalContext()), 1);
 
   Value *CurVar = Builder.CreateLoad(Alloca, VarName.c_str());
-  if (typeTab[VarName] != "int")
-    Builder.CreateSIToFP(CurVar, Type::getInt32Ty(getGlobalContext())); 
+  //if (typeTab[VarName] != "int")
+    Builder.CreateFPToSI(CurVar, Type::getInt32Ty(getGlobalContext())); 
   Value *NextVar = Builder.CreateAdd(CurVar, StepVal, "nextvar");
 
   if (Ty != "int")

@@ -52,8 +52,8 @@ void BinaryExprAST::convertTypes()
 
 Value* BinaryExprAST::Codegen()
 {
-  Value* L = LHS->Codegen();
-  Value* R = RHS->Codegen();
+  L = LHS->Codegen();
+  R = RHS->Codegen();
   bool isInt = true;
   if(!L || !R)
     return 0;
@@ -61,7 +61,7 @@ Value* BinaryExprAST::Codegen()
   rty = RHS->getType();
   if(lty != rty)
     convertTypes();
-  if(lty == "double")
+  if(lty == "double" || rty == "double")
     isInt = false;
   switch(Op)
   {
@@ -105,6 +105,28 @@ Value* BinaryExprAST::Codegen()
       else
       {
         L = Builder.CreateICmpNE(L,R,"cmptmp");
+        return Builder.CreateSExt(L, Type::getInt32Ty(getGlobalContext()), "booltmp");
+      }
+    case '<':
+      if(!isInt)
+      {
+        L = Builder.CreateFCmpULT(L,R,"cmptmp");
+        return Builder.CreateSIToFP(L, Type::getDoubleTy(getGlobalContext()),"booltmp");
+      }
+      else
+      {
+        L = Builder.CreateICmpULT(L,R,"cmptmp");
+        return Builder.CreateSExt(L, Type::getInt32Ty(getGlobalContext()), "booltmp");
+      }
+    case '>':
+      if(!isInt)
+      {
+        L = Builder.CreateFCmpUGT(L,R,"cmptmp");
+        return Builder.CreateSIToFP(L, Type::getDoubleTy(getGlobalContext()),"booltmp");
+      }
+      else
+      {
+        L = Builder.CreateICmpUGT(L,R,"cmptmp");
         return Builder.CreateSExt(L, Type::getInt32Ty(getGlobalContext()), "booltmp");
       }
     default:

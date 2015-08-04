@@ -59,7 +59,6 @@ Value* VarInitExprAST::Codegen()
   {
     AllocaInst* Alloca;
     Function* F = Builder.GetInsertBlock()->getParent();
-    Value* Initial;
     typeTab[Name] = Type;
     Alloca = CreateEntryBlockAlloca(Name,Type);
     if(!Alloca)
