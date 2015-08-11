@@ -8,6 +8,8 @@
 #include "llvm/IR/Verifier.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/MCJIT.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/IRBuilder.h"
@@ -18,6 +20,8 @@
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/ADT/StringRef.h"
 #include <cctype>
+#include <cstdlib>
+#include <memory>
 #include <cstdio>
 #include <map>
 #include <string>
@@ -72,10 +76,10 @@ int main(int argc, char* argv[])
   opt.doFinalization();
   theModule->dump();
 
-  EngineBuilder b(unique_ptr<Module>(theModule));
-  TargetMachine *tm = b.selectTarget();
-  tm->Options.PrintMachineCode = 1;
-  ExecutionEngine *EE = b.create(tm);
+
+
+//  ExecutionEngine *EE = EngineBuilder(theModule).create();
+  
 
   //Write to the file
   string Errors, ErrorCatch;

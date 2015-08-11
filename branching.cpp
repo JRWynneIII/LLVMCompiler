@@ -52,10 +52,10 @@ Value* ForExprAST::Codegen()
   // Insert an explicit fall through from the current block to the LoopBB.
   Builder.CreateBr(LoopBB);
   Builder.SetInsertPoint(LoopBB);
-  PHINode *Variable;
+//  PHINode *Variable;
 
-  Variable = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2, VarName.c_str());
-  Variable->addIncoming(StartVal, PreheaderBB);
+  //Variable = Builder.CreatePHI(Type::getInt32Ty(getGlobalContext()), 2, VarName.c_str());
+  //Variable->addIncoming(StartVal, PreheaderBB);
 
   Value *EndCond = End->Codegen();
   if (EndCond == 0)
@@ -86,7 +86,7 @@ Value* ForExprAST::Codegen()
   BasicBlock *AfterBB = BasicBlock::Create(getGlobalContext(), "afterloop", TheFunction);
   Builder.CreateCondBr(EndCond, LoopBB, AfterBB);
   Builder.SetInsertPoint(AfterBB);
-  Variable->addIncoming(NextVar,LoopEnd);
+  //Variable->addIncoming(NextVar,LoopEnd);
 
   return Constant::getNullValue(Type::getDoubleTy(getGlobalContext()));
 }
